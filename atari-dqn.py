@@ -88,13 +88,13 @@ class Agent(object):
 
         # policy network
         l_in = InputLayer(shape=(None, self.channels, self.resolution[0], self.resolution[1]), input_var=s1)
-        l_conv1 = Conv2DLayer(l_in, num_filters=32, filter_size=[8, 8], nonlinearity=rectify, W=HeUniform("relu"),
-                      b=Constant(.1), stride=4)
-        l_conv2 = Conv2DLayer(l_conv1, num_filters=64, filter_size=[4, 4], nonlinearity=rectify, W=HeUniform("relu"),
+        l_conv1 = Conv2DLayer(l_in, num_filters=32, filter_size=[6, 6], nonlinearity=rectify, W=HeUniform("relu"),
                       b=Constant(.1), stride=2)
-        l_conv3 = Conv2DLayer(l_conv2, num_filters=64, filter_size=[3, 3], nonlinearity=rectify, W=HeUniform("relu"),
+        l_conv2 = Conv2DLayer(l_conv1, num_filters=64, filter_size=[3, 3], nonlinearity=rectify, W=HeUniform("relu"),
                       b=Constant(.1), stride=1)
-        l_hid1 = DenseLayer(l_conv3, num_units=512, nonlinearity=rectify, W=HeUniform("relu"), b=Constant(.1))
+        #l_conv3 = Conv2DLayer(l_conv2, num_filters=64, filter_size=[3, 3], nonlinearity=rectify, W=HeUniform("relu"),
+        #              b=Constant(.1), stride=1)
+        l_hid1 = DenseLayer(l_conv2, num_units=128, nonlinearity=rectify, W=HeUniform("relu"), b=Constant(.1))
         self.dqn = DenseLayer(l_hid1, num_units=self.actions.n, nonlinearity=None)
 
         # Define the loss function
@@ -136,8 +136,8 @@ class Agent(object):
         """# Define exploration rate change over time"""
         start_eps = 1.0
         end_eps = 0.1
-        const_eps_epochs = 0.1 * epochs  # 10% of learning time
-        eps_decay_epochs = 0.6 * epochs  # 60% of learning time
+        const_eps_epochs = 0.01 * epochs  # 10% of learning time
+        eps_decay_epochs = 0.9 * epochs  # 60% of learning time
 
         if epoch < const_eps_epochs:
             return start_eps
@@ -193,16 +193,16 @@ class Agent(object):
 
         return img
 
-    def learn(self, render_training=False, render_test=False, learning_steps_per_epoch=5000, \
-              test_episodes_per_epoch=1, epochs=100, max_test_steps=1000):
+    def learn(self, render_training=False, render_test=False, learning_steps_per_epoch=10000, \
+              test_episodes_per_epoch=1, epochs=1000, max_test_steps=2000):
 
         print "Starting the training!"
 
         time_start = time()
         for epoch in range(epochs):
             print "\nEpoch %d\n-------" % (epoch + 1)
-            eps = self.exploration_rate(epoch, epochs)
-            print "Eps = %d" % eps
+            eps = self.exploration_rate(epoch + 1, epochs)
+            print "Eps = %.2f" % eps
             train_episodes_finished = 0
             train_scores = []
 
@@ -229,6 +229,10 @@ class Agent(object):
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
 
+            print("Saving training results...")
+            with open("train_results.txt", "w") as train_result_file:
+                train_result_file.write(str(train_scores))
+
             print "\nTesting..."
             test_scores = []
             for test_episode in trange(test_episodes_per_epoch):
@@ -251,6 +255,10 @@ class Agent(object):
             test_scores = np.array(test_scores)
             print "Results: mean: %.1f±%.1f," % (
                 test_scores.mean(), test_scores.std()), "min: %.1f" % test_scores.min(), "max: %.1f" % test_scores.max()
+
+            print("Saving test results...")
+            with open("test_results.txt", "w") as test_result_file:
+                test_result_file.write(str(test_scores))
 
             print "Saving the network weigths..."
             pickle.dump(get_all_param_values(self.dqn), open('weights.dump', "w"))
