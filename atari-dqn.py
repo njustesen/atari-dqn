@@ -116,7 +116,7 @@ class Agent(object):
         print "Network compiled."
 
     def get_best_action(self, state):
-        return self.fn_get_best_action(state.reshape([1, self.channels, resolution[0], resolution[1]]))
+        return self.fn_get_best_action(state.reshape([1, self.channels, self.resolution[0], self.resolution[1]]))
 
     def learn_from_transition(self, s1, a, s2, s2_isterminal, r):
         """ Learns from a single transition (making use of replay memory).
