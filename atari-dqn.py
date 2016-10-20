@@ -193,7 +193,7 @@ class Agent(object):
         return img
 
     def learn(self, render_training=False, render_test=False, learning_steps_per_epoch=2000, \
-              test_episodes_per_epoch=1000, epochs=20):
+              test_episodes_per_epoch=2000, epochs=100):
 
         print "Starting the training!"
 
@@ -222,10 +222,10 @@ class Agent(object):
             print "%d training episodes played." % train_episodes_finished
 
             train_scores = np.array(train_scores)
-            '''
+
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
-            '''
+
             print "\nTesting..."
             test_scores = []
             for test_episode in trange(test_episodes_per_epoch):
