@@ -227,10 +227,10 @@ class Agent(object):
             test_scores = []
             for test_episode in trange(test_episodes_per_epoch):
                 s1 = env.reset()
+                s1 = self.preprocess(s1)
                 score = 0
                 isterminal = False
                 while not isterminal:
-                    s1 = self.preprocess(s1)
                     a = self.fn_get_best_action(s1)
                     (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
                     s2 = self.preprocess(s2) if not isterminal else None
@@ -261,5 +261,5 @@ env = gym.make('Breakout-v0')
 agent = Agent(env, colors=False, scale=1, cropping=(30, 10, 6, 6))
 #agent = Agent(env, colors=False, scale=.5, cropping=(30, 30, 20, 20))
 # train agent on the environment
-#agent.learn(render_training=True, render_test=True)
+#agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=10)
 agent.learn(render_training=False, render_test=False)
