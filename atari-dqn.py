@@ -194,7 +194,7 @@ class Agent(object):
         return img
 
     def learn(self, render_training=False, render_test=False, learning_steps_per_epoch=2000, \
-              test_episodes_per_epoch=2000, epochs=100):
+              test_episodes_per_epoch=3, epochs=100, max_test_steps=300):
 
         print "Starting the training!"
 
@@ -225,10 +225,10 @@ class Agent(object):
             print "%d training episodes played." % train_episodes_finished
 
             train_scores = np.array(train_scores)
-
+            '''
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
-
+            '''
             print "\nTesting..."
             test_scores = []
             for test_episode in trange(test_episodes_per_epoch):
@@ -236,7 +236,8 @@ class Agent(object):
                 s1 = self.preprocess(s1)
                 score = 0
                 isterminal = False
-                while not isterminal:
+                frame = 0
+                while not isterminal and frame < max_test_steps:
                     a = self.get_best_action(s1)
                     (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
                     s2 = self.preprocess(s2) if not isterminal else None
@@ -244,6 +245,7 @@ class Agent(object):
                     s1 = s2
                     if (render_test):
                         env.render()
+                    frame += 1
                 test_scores.append(score)
 
             test_scores = np.array(test_scores)
@@ -264,8 +266,8 @@ class Agent(object):
 env = gym.make('Breakout-v0')
 
 # init agent
-agent = Agent(env, colors=False, scale=1, cropping=(30, 10, 6, 6))
-#agent = Agent(env, colors=False, scale=.5, cropping=(30, 30, 20, 20))
+#agent = Agent(env, colors=False, scale=1, cropping=(30, 10, 6, 6))
+agent = Agent(env, colors=False, scale=.5, cropping=(30, 10, 6, 6))
 # train agent on the environment
-#agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=6000)
-agent.learn(render_training=False, render_test=False)
+agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=300)
+#agent.learn(render_training=False, render_test=False)
