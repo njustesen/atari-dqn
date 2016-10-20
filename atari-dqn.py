@@ -115,9 +115,6 @@ class Agent(object):
         self.fn_get_best_action = theano.function([s1], T.argmax(q), name="test_fn")
         print "Network compiled."
 
-    def simple_get_best_action(self, state):
-        return self.get_best_action(state.reshape([1, 1, self.resolution[0], self.resolution[1]]))
-
     def learn_from_transition(self, s1, a, s2, s2_isterminal, r):
         """ Learns from a single transition (making use of replay memory).
         s2 is ignored if s2_isterminal """
@@ -157,7 +154,7 @@ class Agent(object):
             a = randint(0, self.actions.n - 1)
         else:
             # Choose the best action according to the network.
-            a = self.get_best_action(s1)
+            a = self.fn_get_best_action(s1)
         (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
         s2 = self.preprocess(s2)
         s3 = s2 if not isterminal else None
@@ -234,7 +231,7 @@ class Agent(object):
                 isterminal = False
                 while not isterminal:
                     s1 = self.preprocess(s1)
-                    a = self.get_best_action(s1)
+                    a = self.fn_get_best_action(s1)
                     (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
                     s2 = self.preprocess(s2) if not isterminal else None
                     score += reward
