@@ -115,6 +115,9 @@ class Agent(object):
         self.fn_get_best_action = theano.function([s1], T.argmax(q), name="test_fn")
         print "Network compiled."
 
+    def get_best_action(self, state):
+        return self.fn_get_best_action(state.reshape([1, self.channels, resolution[0], resolution[1]]))
+
     def learn_from_transition(self, s1, a, s2, s2_isterminal, r):
         """ Learns from a single transition (making use of replay memory).
         s2 is ignored if s2_isterminal """
@@ -154,7 +157,7 @@ class Agent(object):
             a = randint(0, self.actions.n - 1)
         else:
             # Choose the best action according to the network.
-            a = self.fn_get_best_action(s1)
+            a = self.get_best_action(s1)
         (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
         s2 = self.preprocess(s2)
         s3 = s2 if not isterminal else None
@@ -219,10 +222,10 @@ class Agent(object):
             print "%d training episodes played." % train_episodes_finished
 
             train_scores = np.array(train_scores)
-
+            '''
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
-
+            '''
             print "\nTesting..."
             test_scores = []
             for test_episode in trange(test_episodes_per_epoch):
@@ -231,7 +234,7 @@ class Agent(object):
                 score = 0
                 isterminal = False
                 while not isterminal:
-                    a = self.fn_get_best_action(s1)
+                    a = self.get_best_action(s1)
                     (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
                     s2 = self.preprocess(s2) if not isterminal else None
                     score += reward
@@ -261,5 +264,5 @@ env = gym.make('Breakout-v0')
 agent = Agent(env, colors=False, scale=1, cropping=(30, 10, 6, 6))
 #agent = Agent(env, colors=False, scale=.5, cropping=(30, 30, 20, 20))
 # train agent on the environment
-#agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=10)
-agent.learn(render_training=False, render_test=False)
+agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=6000)
+#agent.learn(render_training=False, render_test=False)
