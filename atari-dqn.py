@@ -132,27 +132,28 @@ class Agent(object):
             # the value of q2 is ignored in learn if s2 is terminal
             self.fn_learn(s1, q2, a, r, isterminal)
 
+    def exploration_rate(self, epoch, epochs):
+        """# Define exploration rate change over time"""
+        start_eps = 1.0
+        end_eps = 0.1
+        const_eps_epochs = 0.1 * epochs  # 10% of learning time
+        eps_decay_epochs = 0.6 * epochs  # 60% of learning time
+
+        if epoch < const_eps_epochs:
+            return start_eps
+        elif epoch < eps_decay_epochs:
+            # Linear decay
+            return start_eps - (epoch - const_eps_epochs) / \
+                               (eps_decay_epochs - const_eps_epochs) * (start_eps - end_eps)
+        else:
+            return end_eps
+
     def perform_learning_step(self, epoch, epochs, s1):
         """ Makes an action according to eps-greedy policy, observes the result
         (next state, reward) and learns from the transition"""
 
-        def exploration_rate(epoch):
-            """# Define exploration rate change over time"""
-            start_eps = 1.0
-            end_eps = 0.1
-            const_eps_epochs = 0.1 * epochs  # 10% of learning time
-            eps_decay_epochs = 0.6 * epochs  # 60% of learning time
-
-            if epoch < const_eps_epochs:
-                return start_eps
-            elif epoch < eps_decay_epochs:
-                # Linear decay
-                return start_eps - (epoch - const_eps_epochs) / \
-                                   (eps_decay_epochs - const_eps_epochs) * (start_eps - end_eps)
-            else:
-                return end_eps
         # With probability eps make a random action.
-        eps = exploration_rate(epoch)
+        eps = self.exploration_rate(epoch, epochs)
         if random() <= eps:
             a = randint(0, self.actions.n - 1)
         else:
@@ -200,6 +201,8 @@ class Agent(object):
         time_start = time()
         for epoch in range(epochs):
             print "\nEpoch %d\n-------" % (epoch + 1)
+            eps = self.exploration_rate(epoch, epochs)
+            print "Eps = %d" % eps
             train_episodes_finished = 0
             train_scores = []
 
