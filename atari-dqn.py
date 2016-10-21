@@ -198,6 +198,9 @@ class Agent(object):
 
         print "Starting the training!"
 
+        train_results = []
+        test_results = []
+
         time_start = time()
         for epoch in range(epochs):
             print "\nEpoch %d\n-------" % (epoch + 1)
@@ -212,6 +215,11 @@ class Agent(object):
             score = 0
             for learning_step in trange(learning_steps_per_epoch):
                 s2, reward, isterminal = self.perform_learning_step(epoch, epochs, s1)
+                '''
+                a = self.get_best_action(s1)
+                (s2, reward, isterminal, _) = env.step(a)  # TODO: Check a
+                s2 = self.preprocess(s2) if not isterminal else None
+                '''
                 score += reward
                 s1 = s2
                 if (render_training):
@@ -221,7 +229,7 @@ class Agent(object):
                     s1 = env.reset()
                     s1 = self.preprocess(s1)
                     train_episodes_finished += 1
-
+            
             print "%d training episodes played." % train_episodes_finished
 
             train_scores = np.array(train_scores)
@@ -229,9 +237,11 @@ class Agent(object):
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
 
+            train_results.append(train_scores.mean(), train_scores.std())
+
             print("Saving training results...")
             with open("train_results.txt", "w") as train_result_file:
-                train_result_file.write(str(train_scores))
+                train_result_file.write(str(train_results))
 
             print "\nTesting..."
             test_scores = []
@@ -253,12 +263,15 @@ class Agent(object):
                 test_scores.append(score)
 
             test_scores = np.array(test_scores)
+
             print "Results: mean: %.1f±%.1f," % (
                 test_scores.mean(), test_scores.std()), "min: %.1f" % test_scores.min(), "max: %.1f" % test_scores.max()
 
+            test_results.append(test_scores.mean(), test_scores.std())
+
             print("Saving test results...")
             with open("test_results.txt", "w") as test_result_file:
-                test_result_file.write(str(test_scores))
+                test_result_file.write(str(test_results))
 
             print "Saving the network weigths..."
             pickle.dump(get_all_param_values(self.dqn), open('weights.dump', "w"))
@@ -277,5 +290,5 @@ env = gym.make('Breakout-v0')
 agent = Agent(env, colors=False, scale=1, cropping=(30, 10, 6, 6))
 #agent = Agent(env, colors=False, scale=.5, cropping=(30, 10, 6, 6))
 # train agent on the environment
-agent.learn(render_training=False, render_test=False)
+agent.learn(render_training=True, render_test=False)
 #agent.learn(render_training=True, render_test=True, learning_steps_per_epoch=300)
