@@ -194,7 +194,7 @@ class Agent(object):
         return img
 
     def learn(self, render_training=False, render_test=False, learning_steps_per_epoch=10000, \
-              test_episodes_per_epoch=1, epochs=1000, max_test_steps=2000):
+              test_episodes_per_epoch=1, epochs=200, max_test_steps=2000):
 
         print "Starting the training!"
 
@@ -229,6 +229,7 @@ class Agent(object):
                     s1 = env.reset()
                     s1 = self.preprocess(s1)
                     train_episodes_finished += 1
+                    score = 0
 
             print "%d training episodes played." % train_episodes_finished
 
