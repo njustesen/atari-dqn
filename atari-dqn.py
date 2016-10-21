@@ -229,7 +229,7 @@ class Agent(object):
                     s1 = env.reset()
                     s1 = self.preprocess(s1)
                     train_episodes_finished += 1
-            
+
             print "%d training episodes played." % train_episodes_finished
 
             train_scores = np.array(train_scores)
@@ -237,7 +237,7 @@ class Agent(object):
             print "Results: mean: %.1f±%.1f," % (train_scores.mean(), train_scores.std()), \
                 "min: %.1f," % train_scores.min(), "max: %.1f," % train_scores.max()
 
-            train_results.append(train_scores.mean(), train_scores.std())
+            train_results.append((train_scores.mean(), train_scores.std()))
 
             print("Saving training results...")
             with open("train_results.txt", "w") as train_result_file:
@@ -267,7 +267,7 @@ class Agent(object):
             print "Results: mean: %.1f±%.1f," % (
                 test_scores.mean(), test_scores.std()), "min: %.1f" % test_scores.min(), "max: %.1f" % test_scores.max()
 
-            test_results.append(test_scores.mean(), test_scores.std())
+            test_results.append((test_scores.mean(), test_scores.std()))
 
             print("Saving test results...")
             with open("test_results.txt", "w") as test_result_file:
